@@ -54,5 +54,5 @@
 			<name>GitHub Packages</name>
 			<url>https://maven.pkg.github.com/negretenico/n2</url>
 		</repository>
-	</distributionManagement
+	</distributionManagement>
 </project>
