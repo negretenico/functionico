@@ -52,7 +52,7 @@
 		<repository>
 			<id>github</id>
 			<name>GitHub Packages</name>
-			<url>https://maven.pkg.github.com/negretenico/n2</url>
+			<url>https://maven.pkg.github.com/negretenico/functionico</url>
 		</repository>
 	</distributionManagement>
 </project>
