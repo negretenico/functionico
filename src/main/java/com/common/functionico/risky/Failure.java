@@ -2,6 +2,7 @@ package com.common.functionico.risky;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public record Failure<T>(Throwable error)implements Try<T> {
     @Override
@@ -36,8 +37,13 @@ public record Failure<T>(Throwable error)implements Try<T> {
     }
 
     @Override
-    public T getOrElse(T fallback) {
-        return fallback;
+    public T get() {
+        return null;
+    }
+
+    @Override
+    public T getOrElse(Supplier<T>fallback) {
+        return fallback.get();
     }
 
     @Override

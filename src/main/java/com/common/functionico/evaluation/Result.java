@@ -1,34 +1,82 @@
 package com.common.functionico.evaluation;
 
+import org.springframework.util.function.ThrowingSupplier;
+
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
-public record Result<T>(T data, String errorMsg) {
-    public static <T> Result<T> success(T data) {
-        return new Result<>(data, null);
+public record Result<State>(State state, Throwable e) {
+
+    public static <State> Result<State> success(State initial) {
+        return new Result<>(initial, null);
     }
 
-    public static <T> Result<T> failure(String errorMessage) {
-        return new Result<>(null, errorMessage);
+    public static <State> Result<State> failure(Throwable e) {
+        return new Result<>(null, e);
     }
 
-    public boolean isSuccess() {
-        return Objects.nonNull(this.data);
-    }
-
-    public boolean isFailure() {
-        return Objects.isNull(this.data);
-    }
-    public <U> Result<U> map(Function<T, U> mapper){
-        if (isFailure()) {
-            return Result.failure(errorMsg);
+    public Result<State> onSuccess(Consumer<State> success) {
+        if (Objects.isNull(this.e)) {
+            success.accept(this.state);
         }
-        return Result.success(mapper.apply(data));
+        return this;
     }
-    public T getOrThrow() {
-        if (isFailure()) {
-            throw new RuntimeException("Result failed: " + errorMsg);
+
+    public static <State> Result<State> of(ThrowingSupplier<State> func) {
+        try {
+            return success(func.get());
+        } catch (Exception e) {
+            return failure(e);
         }
-        return data;
+    }
+
+    public Result<State> onFailure(Consumer<Throwable> failure) {
+        if (Objects.nonNull(this.e)) {
+            failure.accept(this.e);
+        }
+        return this;
+    }
+
+    public <NewState> Result<NewState> flatMap(Function<State, Result<NewState>> next) {
+        if (Objects.nonNull(e)) {
+            return new Result<>(null, e);
+        }
+        try {
+            return next.apply(state);
+        } catch (Exception e) {
+            return new Result<>(null, e);
+        }
+    }
+
+
+    public <NewState> Result<NewState> map(Function<State, NewState> convert) {
+        if (Objects.nonNull(e)) {
+            return new Result<>(null, e);
+        }
+        if (Objects.isNull(state)) {
+            return new Result<>(null, new RuntimeException("Cannot map on null state"));
+        }
+        try {
+            NewState newState = convert.apply(this.state);
+            if (newState == null) {
+                throw new RuntimeException("Map function returned null");
+            }
+            return new Result<>(newState, null);
+        } catch (Exception e) {
+            return new Result<>(null, e);
+        }
+    }
+
+    public Throwable getError() {
+        return e;
+    }
+
+    public State get() {
+        return state;
+    }
+
+    public State getOrElse(State fallback) {
+        return Objects.nonNull(state) ? state : fallback;
     }
 }

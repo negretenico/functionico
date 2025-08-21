@@ -3,6 +3,7 @@ package com.common.functionico.risky;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public record Success<T>(T data) implements Try<T> {
     @Override
@@ -45,8 +46,13 @@ public record Success<T>(T data) implements Try<T> {
     }
 
     @Override
-    public T getOrElse(T fallback) {
-        return Objects.isNull(data)?fallback:data;
+    public T get() {
+        return data;
+    }
+
+    @Override
+    public T getOrElse(Supplier<T> fallback) {
+        return Objects.isNull(data)?fallback.get():data;
     }
 
     @Override

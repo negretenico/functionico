@@ -1,7 +1,10 @@
 package com.common.functionico.risky;
 
+import org.springframework.util.function.ThrowingSupplier;
+
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public sealed interface Try<T> permits Success, Failure {
     <U> Try<U> map(Function<T, U> fn);
@@ -10,7 +13,8 @@ public sealed interface Try<T> permits Success, Failure {
     Try<T> onFailure(Consumer<Throwable> action);
     boolean isSuccess();
     boolean isFailure();
-    T getOrElse(T fallback);
+    T get();
+    T getOrElse(Supplier<T> fallback);
     T getOrThrow();
 
     static <T> Try<T> of(ThrowingSupplier<T> supplier) {
@@ -21,8 +25,4 @@ public sealed interface Try<T> permits Success, Failure {
         }
     }
 
-    @FunctionalInterface
-    interface ThrowingSupplier<T> {
-        T get() throws Throwable;
-    }
 }
